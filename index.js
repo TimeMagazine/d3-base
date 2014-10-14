@@ -1,24 +1,36 @@
-(function($) {
-	var d3 = require('d3');
+(function() {
+    var root = this;
+
+	// check if we're in a Node (browserify) environment. If not, you need to load d3.
+    var d3 = typeof module !== "undefined" ? require("d3") : window.d3;
+
+    if (!d3) {
+        console.log("d3-base requires that you include d3 first.");
+        return;
+    }
 
 	// create a new SVG element
-	module.exports = function(parent, opts) {
+	var d3base = function(parent, opts) {
 		opts = opts || {};
 
 		// setup
 		if (!parent) {
-			console.log("You must supply d3 base a parent");
+			console.log("You must supply d3-base a parent as the first argument");
 			return null;
 		}
 
-		var base = {};
-	    base.width = opts.width || $(parent).width();
+		var base = {
+			width: typeof opts.width !== "undefined" ? opts.width : parseInt(d3.select(parent).style("width"), 10),
+			scale: 1
+		};
 
-	    if (opts.height) {
+		var original_width = base.width;
+
+	    if (typeof opts.height !== "undefined") {
 	    	base.height = opts.height;
 	    	opts.aspect = base.height / base.width;
 	    } else {
-		    opts.aspect = opts.aspect || 0.618;
+		    opts.aspect = typeof opts.aspect !== "undefined" ? opts.aspect : 0.618;
 			base.height = base.width * opts.aspect;
 	    }
 
@@ -29,8 +41,9 @@
 			.attr("height", base.height);
 		
 		function resize() { 
-			base.width = $(parent).width();
+			base.width = parseInt(d3.select(parent).style("width"), 10);
 		    base.height = base.width * opts.aspect;
+		    base.scale = base.width / original_width;
 
 		    base.svg
 				.attr("width",  base.width)
@@ -38,22 +51,29 @@
 
 			// optional callback
 			if (opts.onresize) {
-				opts.onresize(base.width, base.height);
+				opts.onresize(base.width, base.height, base.scale);
 			}
 		}
 
-		if (!opts.dontresize) {
-			var resizeTimer;
+		var resizeTimer;
 
-			$(window).resize(function() { 
-				clearTimeout(resizeTimer);
-				resizeTimer = setTimeout(function() {
-					resize();
-				}, 100);
-			});
-		}
+		d3.select(window).on('resize', function() { 
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(function() {
+				resize();
+			}, 100);
+		});
 		
 		return base;
+	}
+
+	// support various modular environments
+	if (typeof define === "function" && define.amd) { // RequireJS
+	    define(d3base);
+	} else if (typeof module === "object" && module.exports) { // browserify
+	    module.exports = d3base;
+	} else {
+	    root.d3base = d3base; // directly included
 	}
 
 	// some d3 extensions
@@ -88,4 +108,4 @@
 		return this;
 	};
 
-}(window.jQuery));
+}());
