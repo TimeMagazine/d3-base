@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/TimeMagazine/d3-base/issues"
   },
+  "dependencies": {
+    "d3": ">= 3.0.0"
+  },
   "homepage": "https://github.com/TimeMagazine/d3-base"
 }
