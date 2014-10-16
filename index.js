@@ -49,6 +49,8 @@
 		    base.height = base.width * opts.aspect;
 		    base.scale = base.width / original_width;
 
+		    console.log("resizing", parent);
+
 		    base.svg
 				.attr("width",  base.width)
 				.attr("height", base.height);
@@ -61,12 +63,25 @@
 
 		var resizeTimer;
 
-		d3.select(window).on('resize', function() { 
-			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(function() {
-				resize();
-			}, 100);
-		});
+		// http://stackoverflow.com/questions/3339825/what-is-the-best-practise-to-not-to-override-other-bound-functions-to-window-onr
+		function addResizeEvent(func, dur) {
+			var resizeTimer,
+		    	oldResize = window.onresize;
+		    	
+		    window.onresize = function () {
+				clearTimeout(resizeTimer);
+
+		        if (typeof oldResize === 'function') {
+		            oldResize();
+		        }
+
+				resizeTimer = setTimeout(function() {
+					func();
+				}, dur || 250);
+		    };
+		}
+
+		addResizeEvent(resize, 250);
 
 		if (opts.resize && opts.resize === "auto") {
 			resize(); // call this on load since sometimes the initial conditions are wider than container
