@@ -39,6 +39,10 @@
 	    base.svg
 			.attr("width", base.width)
 			.attr("height", base.height);
+
+	    if (opts.resize && opts.resize == "auto") {
+	    	base.svg.attr("viewBox", "0 0 " + base.width + " " + base.height);
+	    }
 		
 		function resize() { 
 			base.width = parseInt(d3.select(parent).style("width"), 10);
@@ -63,7 +67,11 @@
 				resize();
 			}, 100);
 		});
-		
+
+		if (opts.resize && opts.resize === "auto") {
+			resize(); // call this on load since sometimes the initial conditions are wider than container
+		}
+
 		return base;
 	}
 
