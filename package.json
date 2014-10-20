@@ -1,7 +1,7 @@
 {
   "name": "d3-base",
-  "version": "0.0.0",
-  "description": "Convenience functions for D3. Work in progress.",
+  "version": "0.0.1",
+  "description": "Responsive SVGs using D3.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

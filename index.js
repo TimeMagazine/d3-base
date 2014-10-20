@@ -21,7 +21,8 @@
 
 		var base = {
 			width: typeof opts.width !== "undefined" ? opts.width : parseInt(d3.select(parent).style("width"), 10),
-			scale: 1
+			scale: 1,
+			uid: s5() // needed for namespacing the resize event
 		};
 
 		var original_width = base.width;
@@ -49,8 +50,6 @@
 		    base.height = base.width * opts.aspect;
 		    base.scale = base.width / original_width;
 
-		    console.log("resizing", parent);
-
 		    base.svg
 				.attr("width",  base.width)
 				.attr("height", base.height);
@@ -65,10 +64,9 @@
 
 		// http://stackoverflow.com/questions/3339825/what-is-the-best-practise-to-not-to-override-other-bound-functions-to-window-onr
 		function addResizeEvent(func, dur) {
-			var resizeTimer,
-		    	oldResize = window.onresize;
-		    	
-		    window.onresize = function () {
+			var resizeTimer;
+
+			d3.select(window).on("resize." + base.uid, function() {
 				clearTimeout(resizeTimer);
 
 		        if (typeof oldResize === 'function') {
@@ -78,7 +76,7 @@
 				resizeTimer = setTimeout(function() {
 					func();
 				}, dur || 250);
-		    };
+			});
 		}
 
 		addResizeEvent(resize, 250);
@@ -110,7 +108,7 @@
 
 	d3.selection.prototype.tooltip = function(over, out, click) {		
 		this //.on("click", function(d) { tooltip.html(typeof f === "function" ? f(d) : f); tooltip.classed("clicked", "true"); tooltip.style("visibility", "visible"); })
-			.on("mouseover", function(d, i, j) { 
+			.on("mouseover.d3tooltip", function(d, i, j) { 
 				var html = typeof over === "function" ? over(d, i, this, j) : over;
 				tooltip.html(html); 
 				if (html && html !== "") {
@@ -119,10 +117,10 @@
 					tooltip.style("visibility", "hidden");
 				}
 			})
-			.on("mousemove", function() { 
+			.on("mousemove.d3tooltip", function() { 
 				return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
 			})
-			.on("mouseout", function(d, i) { 			
+			.on("mouseout.d3tooltip", function(d, i) { 			
 				if (out) {
 					out(d, i, this);
 				}
@@ -130,5 +128,11 @@
 			});
 		return this;
 	};
+
+	function s5() {
+	    return Math.floor((1 + Math.random()) * 0x100000)
+			.toString(16)
+			.substring(1);
+	}
 
 }());
