@@ -55,8 +55,8 @@
 				.attr("height", base.height);
 
 			// optional callback
-			if (opts.onresize) {
-				opts.onresize(base.width, base.height, base.scale);
+			if (opts.onResize) {
+				opts.onResize(base.width, base.height, base.scale);
 			}
 		}
 
@@ -83,6 +83,10 @@
 
 		if (opts.resize && opts.resize === "auto") {
 			resize(); // call this on load since sometimes the initial conditions are wider than container
+		}
+
+		base.setResize = function(f) {
+			opts.onResize = f;
 		}
 
 		return base;
