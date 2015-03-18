@@ -8,7 +8,9 @@
         console.log("d3-base requires that you include d3 first.");
         return;
     }
-
+    // Width/height for tooltips
+    var width = 0,
+    	height = 0;
 	// create a new SVG element
 	var d3base = function(parent, opts) {
 		opts = opts || {};
@@ -28,11 +30,19 @@
 		var original_width = base.width;
 
 	    if (typeof opts.height !== "undefined") {
+	    	// For tooltips
+	    	height = opts.height;
+	    	width = base.width;
+	    	
 	    	base.height = opts.height;
 	    	opts.aspect = base.height / base.width;
 	    } else {
 		    opts.aspect = typeof opts.aspect !== "undefined" ? opts.aspect : 0.618;
 			base.height = base.width * opts.aspect;
+			
+			// For tooltips
+			height = base.width * opts.aspect;
+			width = base.width;
 	    }
 
 	    base.svg = d3.select(parent).append("svg");
@@ -54,6 +64,9 @@
 				.attr("width",  base.width)
 				.attr("height", base.height);
 
+			// Update width/height for tooltips
+			width = base.width;
+	    	height = base.width;
 			// optional callback
 			if (opts.onResize) {
 				opts.onResize(base.width, base.height, base.scale);
@@ -121,8 +134,12 @@
 					tooltip.style("visibility", "hidden");
 				}
 			})
-			.on("mousemove.d3tooltip", function() { 
-				return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+			.on("mousemove.d3tooltip", function() {
+				if (d3.event.pageY < height/2){
+					return d3.event.pageX < (width/2) ? tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px") : tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX - tooltip[0][0].clientWidth - 10)+"px");
+				} else {
+					return d3.event.pageX < (width/2) ? tooltip.style("top", (d3.event.pageY- tooltip[0][0].clientHeight + 10)+"px").style("left",(d3.event.pageX+10)+"px") : tooltip.style("top", (d3.event.pageY- tooltip[0][0].clientHeight + 10)+"px").style("left",(d3.event.pageX - tooltip[0][0].clientWidth - 10)+"px");
+				}
 			})
 			.on("mouseout.d3tooltip", function(d, i) { 			
 				if (out) {
